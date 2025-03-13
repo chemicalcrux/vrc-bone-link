@@ -1,8 +1,13 @@
 {
   "name": "com.chemicalcrux.armature-reparenter",
   "displayName": "Armature Reparenter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "hideInEditor": true,
   "description": "Staples one armature onto another.",
-  "unity": "2022.3"
+  "unity": "2022.3",
+  "author": {
+    "name": "chemicalcrux",
+    "email": "chemicalcrux@gmail.com",
+    "url": "https://github.com/chemicalcrux/"
+  }
 }
