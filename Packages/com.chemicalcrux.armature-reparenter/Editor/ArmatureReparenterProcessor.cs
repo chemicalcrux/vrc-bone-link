@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using ChemicalCrux.ArmatureReparenter.Runtime;
+using ChemicalCrux.ArmatureReparenter.Runtime.Freeze;
+using ChemicalCrux.ArmatureReparenter.Runtime.Model;
 using com.vrcfury.api;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -25,26 +27,28 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
 
         void Process(ReparentArmature reparentArmature)
         {
-            HashSet<HumanBodyBones> keepPositionSet = new();
-            HashSet<HumanBodyBones> keepRotationSet = new();
-            Dictionary<HumanBodyBones, ReparentArmature.ConstraintType> constraintTypes = new();
+            Dictionary<HumanBodyBones, ReparentArmatureModelV1.AttachSettings> overrideMap = new();
 
             List<VRCConstraintBase> constraints = new();
 
-            foreach (var overrides in reparentArmature.overrides)
+            if (!reparentArmature.model.TryUpgradeTo(out ReparentArmatureModelV1 model))
             {
-                if (overrides.keepPositionOffset)
-                {
-                    keepPositionSet.UnionWith(overrides.bones);
-                }
+                Debug.LogError("Failed to upgrade the model data.");
+                return;
+            }
 
-                if (overrides.keepRotationOffset)
-                {
-                    keepRotationSet.UnionWith(overrides.bones);
-                }
+            if (!reparentArmature.freeze.TryUpgradeTo(out ReparentArmatureFreezeV1 freeze))
+            {
+                Debug.LogError("Failed to upgrade the freeze data.");
+                return;
+            }
 
-                foreach (var bone in overrides.bones)
-                    constraintTypes[bone] = overrides.constraintType;
+            foreach (var overrideData in model.overrides)
+            {
+                foreach (var bone in overrideData.bones)
+                {
+                    overrideMap[bone] = overrideData.settings;
+                }
             }
 
             foreach (HumanBodyBones bone in Enum.GetValues(typeof(HumanBodyBones)))
@@ -52,39 +56,39 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
                 if (bone == HumanBodyBones.LastBone)
                     break;
 
-                var sourceBone = reparentArmature.source.GetBoneTransform(bone);
-                var targetBone = reparentArmature.target.GetBoneTransform(bone);
+                var sourceBone = model.source.GetBoneTransform(bone);
+                var targetBone = model.target.GetBoneTransform(bone);
 
                 if (!sourceBone || !targetBone)
                     continue;
 
-                var constraintType = constraintTypes.GetValueOrDefault(bone, ReparentArmature.ConstraintType.Parent);
+                var settings = overrideMap.GetValueOrDefault(bone, model.defaultSettings);
 
                 Vector3 position = default;
 
-                if (keepPositionSet.Contains(bone))
+                if (settings.keepPositionOffset)
                 {
                     position = targetBone.InverseTransformDirection(sourceBone.position - targetBone.position);
                 }
 
                 Quaternion rotation = default;
 
-                if (keepRotationSet.Contains(bone))
+                if (settings.keepRotationOffset)
                 {
                     rotation = Quaternion.Inverse(targetBone.rotation) * sourceBone.rotation;
                 }
 
                 VRCConstraintBase constraint;
 
-                switch (constraintType)
+                switch (settings.constraintType)
                 {
-                    case ReparentArmature.ConstraintType.Parent:
+                    case ReparentArmatureModelV1.ConstraintType.Parent:
                         constraint = sourceBone.gameObject.AddComponent<VRCParentConstraint>();
                         break;
-                    case ReparentArmature.ConstraintType.Position:
+                    case ReparentArmatureModelV1.ConstraintType.Position:
                         constraint = sourceBone.gameObject.AddComponent<VRCPositionConstraint>();
                         break;
-                    case ReparentArmature.ConstraintType.Rotation:
+                    case ReparentArmatureModelV1.ConstraintType.Rotation:
                         constraint = sourceBone.gameObject.AddComponent<VRCRotationConstraint>();
                         break;
                     default:
@@ -107,94 +111,97 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
 
             var fc = FuryComponents.CreateFullController(reparentArmature.gameObject);
 
-            var controller = new AnimatorController();
-
-            fc.AddController(controller);
-            fc.AddGlobalParam(reparentArmature.freezeParameter);
-
-            controller.AddParameter(reparentArmature.freezeParameter, AnimatorControllerParameterType.Float);
-        
-            var machine = new AnimatorStateMachine
+            if (freeze.addFreeze)
             {
-                name = "Freeze Machine"
-            };
+                var controller = new AnimatorController();
 
-            var layer = new AnimatorControllerLayer
-            {
-                name = "Freeze",
-                defaultWeight = 1f,
-                stateMachine = machine
-            };
+                fc.AddController(controller);
+                fc.AddGlobalParam(freeze.freezeParameter);
 
-            controller.AddLayer(layer);
+                controller.AddParameter(freeze.freezeParameter, AnimatorControllerParameterType.Float);
 
-            var blend = machine.AddState("Blend");
-
-            var tree = new BlendTree
-            {
-                name = "Blend",
-                blendType = BlendTreeType.Simple1D,
-                blendParameter = reparentArmature.freezeParameter,
-                useAutomaticThresholds = true
-            };
-
-            blend.motion = tree;
-
-            var idleClip = new AnimationClip();
-            var freezeClip = new AnimationClip();
-
-            idleClip.name = "Idle";
-            freezeClip.name = "Freeze";
-
-            foreach (var constraint in constraints)
-            {
-                string path = GetPath(reparentArmature.source.transform, constraint.transform);
-                Type type = constraint.GetType();
-                string property = "FreezeToWorld";
-                var zeroCurve = AnimationCurve.Constant(0, 1, 0);
-                var oneCurve = AnimationCurve.Constant(0, 1, 1);
-
-                idleClip.SetCurve(path, type, property, zeroCurve);
-                freezeClip.SetCurve(path, type, property, oneCurve);
-            }
-
-            tree.AddChild(idleClip);
-            tree.AddChild(freezeClip);
-
-            if (reparentArmature.addFreezeControl)
-            {
-                var menu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
-                var parameters = ScriptableObject.CreateInstance<VRCExpressionParameters>();
-            
-                menu.Parameters = parameters;
-            
-                menu.controls = new List<VRCExpressionsMenu.Control>
+                var machine = new AnimatorStateMachine
                 {
-                    new VRCExpressionsMenu.Control
+                    name = "Freeze Machine"
+                };
+
+                var layer = new AnimatorControllerLayer
+                {
+                    name = "Freeze",
+                    defaultWeight = 1f,
+                    stateMachine = machine
+                };
+
+                controller.AddLayer(layer);
+
+                var blend = machine.AddState("Blend");
+
+                var tree = new BlendTree
+                {
+                    name = "Blend",
+                    blendType = BlendTreeType.Simple1D,
+                    blendParameter = freeze.freezeParameter,
+                    useAutomaticThresholds = true
+                };
+
+                blend.motion = tree;
+
+                var idleClip = new AnimationClip();
+                var freezeClip = new AnimationClip();
+
+                idleClip.name = "Idle";
+                freezeClip.name = "Freeze";
+
+                foreach (var constraint in constraints)
+                {
+                    string path = GetPath(model.source.transform, constraint.transform);
+                    Type type = constraint.GetType();
+                    string property = "FreezeToWorld";
+                    var zeroCurve = AnimationCurve.Constant(0, 1, 0);
+                    var oneCurve = AnimationCurve.Constant(0, 1, 1);
+
+                    idleClip.SetCurve(path, type, property, zeroCurve);
+                    freezeClip.SetCurve(path, type, property, oneCurve);
+                }
+
+                tree.AddChild(idleClip);
+                tree.AddChild(freezeClip);
+
+                if (freeze.addFreezeControl)
+                {
+                    var menu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
+                    var parameters = ScriptableObject.CreateInstance<VRCExpressionParameters>();
+
+                    menu.Parameters = parameters;
+
+                    menu.controls = new List<VRCExpressionsMenu.Control>
                     {
-                        name = "Freeze",
-                        type = VRCExpressionsMenu.Control.ControlType.Toggle,
-                        parameter = new VRCExpressionsMenu.Control.Parameter
+                        new()
                         {
-                            name = reparentArmature.freezeParameter
+                            name = "Freeze",
+                            type = VRCExpressionsMenu.Control.ControlType.Toggle,
+                            parameter = new VRCExpressionsMenu.Control.Parameter
+                            {
+                                name = freeze.freezeParameter
+                            }
                         }
-                    }
-                };
+                    };
 
-                parameters.parameters = new[]
-                {
-                    new VRCExpressionParameters.Parameter
+                    parameters.parameters = new[]
                     {
-                        name = reparentArmature.freezeParameter,
-                        saved = false,
-                        defaultValue = 0,
-                        networkSynced = true,
-                        valueType = VRCExpressionParameters.ValueType.Bool
-                    }
-                };
+                        new VRCExpressionParameters.Parameter
+                        {
+                            name = freeze.freezeParameter,
+                            saved = false,
+                            defaultValue = 0,
+                            networkSynced = true,
+                            valueType = VRCExpressionParameters.ValueType.Bool
+                        }
+                    };
 
-                fc.AddMenu(menu, reparentArmature.freezeControlPath);
-                fc.AddParams(parameters);
+                    fc.AddMenu(menu, freeze.freezeControlPath);
+                    fc.AddParams(parameters);
+                }
             }
         }
 

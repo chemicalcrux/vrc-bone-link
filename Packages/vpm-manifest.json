@@ -8,6 +8,9 @@
     },
     "com.vrcfury.vrcfury": {
       "version": "1.1207.0"
+    },
+    "com.chemicalcrux.crux-core": {
+      "version": "0.3.2"
     }
   },
   "locked": {
@@ -29,6 +32,10 @@
     },
     "com.vrcfury.vrcfury": {
       "version": "1.1207.0",
+      "dependencies": {}
+    },
+    "com.chemicalcrux.crux-core": {
+      "version": "0.3.2",
       "dependencies": {}
     }
   }
