@@ -27,7 +27,8 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
 
         void Process(ReparentArmature reparentArmature)
         {
-            Dictionary<HumanBodyBones, ReparentArmatureModelV1.AttachSettings> overrideMap = new();
+            Dictionary<Transform, Transform> bonePairs = new();
+            Dictionary<Transform, ReparentArmatureModelV1.AttachSettings> overrideMap = new();
 
             List<VRCConstraintBase> constraints = new();
 
@@ -43,26 +44,33 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
                 return;
             }
 
-            foreach (var overrideData in model.overrides)
+            foreach (HumanBodyBones humanBodyBone in Enum.GetValues(typeof(HumanBodyBones)))
             {
-                foreach (var bone in overrideData.bones)
+                if (humanBodyBone == HumanBodyBones.LastBone)
+                    break;
+                
+                var sourceTransform = model.source.GetBoneTransform(humanBodyBone);
+                var targetTransform = model.target.GetBoneTransform(humanBodyBone);
+
+                if (sourceTransform && targetTransform)
                 {
-                    overrideMap[bone] = overrideData.settings;
+                    bonePairs[sourceTransform] = targetTransform;
+                    overrideMap[sourceTransform] = model.defaultSettings;
                 }
             }
 
-            foreach (HumanBodyBones bone in Enum.GetValues(typeof(HumanBodyBones)))
+            foreach (var overrideData in model.overrides)
             {
-                if (bone == HumanBodyBones.LastBone)
-                    break;
+                foreach (var (sourceBone, targetBone) in overrideData.GetAllTransforms(model.source, model.target))
+                {
+                    bonePairs[sourceBone] = targetBone;
+                    overrideMap[sourceBone] = overrideData.settings;
+                }
+            }
 
-                var sourceBone = model.source.GetBoneTransform(bone);
-                var targetBone = model.target.GetBoneTransform(bone);
-
-                if (!sourceBone || !targetBone)
-                    continue;
-
-                var settings = overrideMap.GetValueOrDefault(bone, model.defaultSettings);
+            foreach ((Transform sourceBone, Transform targetBone) in bonePairs)
+            {
+                var settings = overrideMap[sourceBone];
 
                 Vector3 position = default;
 
@@ -91,9 +99,15 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
                     case ReparentArmatureModelV1.ConstraintType.Rotation:
                         constraint = sourceBone.gameObject.AddComponent<VRCRotationConstraint>();
                         break;
+                    case ReparentArmatureModelV1.ConstraintType.None:
+                        constraint = null;
+                        break;
                     default:
                         throw new Exception("What did you do");
                 }
+
+                if (constraint == null)
+                    continue;
 
                 constraints.Add(constraint);
 
@@ -111,14 +125,21 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
 
             var fc = FuryComponents.CreateFullController(reparentArmature.gameObject);
 
-            if (freeze.addFreeze)
+            if (freeze.enabled)
             {
                 var controller = new AnimatorController();
 
-                fc.AddController(controller);
-                fc.AddGlobalParam(freeze.freezeParameter);
+                string parameterName = "Control/Freeze";
 
-                controller.AddParameter(freeze.freezeParameter, AnimatorControllerParameterType.Float);
+                if (freeze.addGlobalParameter)
+                {
+                    parameterName = freeze.globalParameterName;
+                    fc.AddGlobalParam(parameterName);
+                }
+
+                fc.AddController(controller);
+
+                controller.AddParameter(parameterName, AnimatorControllerParameterType.Float);
 
                 var machine = new AnimatorStateMachine
                 {
@@ -140,7 +161,7 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
                 {
                     name = "Blend",
                     blendType = BlendTreeType.Simple1D,
-                    blendParameter = freeze.freezeParameter,
+                    blendParameter = parameterName,
                     useAutomaticThresholds = true
                 };
 
@@ -167,7 +188,7 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
                 tree.AddChild(idleClip);
                 tree.AddChild(freezeClip);
 
-                if (freeze.addFreezeControl)
+                if (freeze.addControl)
                 {
                     var menu = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
                     var parameters = ScriptableObject.CreateInstance<VRCExpressionParameters>();
@@ -182,7 +203,7 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
                             type = VRCExpressionsMenu.Control.ControlType.Toggle,
                             parameter = new VRCExpressionsMenu.Control.Parameter
                             {
-                                name = freeze.freezeParameter
+                                name = parameterName
                             }
                         }
                     };
@@ -191,7 +212,7 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
                     {
                         new VRCExpressionParameters.Parameter
                         {
-                            name = freeze.freezeParameter,
+                            name = parameterName,
                             saved = false,
                             defaultValue = 0,
                             networkSynced = true,
@@ -199,7 +220,7 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
                         }
                     };
 
-                    fc.AddMenu(menu, freeze.freezeControlPath);
+                    fc.AddMenu(menu, freeze.controlPath);
                     fc.AddParams(parameters);
                 }
             }

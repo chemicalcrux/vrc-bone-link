@@ -1,0 +1,3 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <ui:Label tabindex="-1" text="Allows you to freeze the parented armature in place. You can control the freeze either with a global parameter &lt;b&gt;or&lt;/b&gt; with a menu control (or both!)." parse-escape-sequences="true" display-tooltip-when-elided="true" class="tooltip-text" />
+</ui:UXML>

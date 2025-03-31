@@ -200,22 +200,16 @@ MonoBehaviour:
           keepRotationOffset: 0
         source: {fileID: 643635459}
         target: {fileID: 1158940308}
-        overrides:
-        - bones: 
-          boneGroups: 0
-          settings:
-            constraintType: 0
-            keepPositionOffset: 0
-            keepRotationOffset: 0
+        overrides: []
     - rid: 7569698405476204548
       type: {class: ReparentArmatureFreezeV1, ns: ChemicalCrux.ArmatureReparenter.Runtime.Freeze,
         asm: ArmatureReparenterRuntime}
       data:
-        addFreeze: 1
-        addGlobalParameter: 0
-        freezeParameter: chemicalcrux/Armature Reparenter/Freeze
-        addFreezeControl: 1
-        freezeControlPath: 
+        enabled: 1
+        addGlobalParameter: 1
+        globalParameterName: chemicalcrux/Armature Reparenter/Freeze
+        addControl: 0
+        controlPath: Freeze
 --- !u!95 &643635459 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: f81e8172c337a714894d6fdbd0900d8d,
@@ -982,10 +976,20 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: f81e8172c337a714894d6fdbd0900d8d,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 919132149155446097, guid: f81e8172c337a714894d6fdbd0900d8d,
         type: 3}
       propertyPath: m_Name
       value: Tutorial_Robot_Avatar_Dynamics_Demo_v1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3742407835892290726, guid: f81e8172c337a714894d6fdbd0900d8d,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
