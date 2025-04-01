@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using ChemicalCrux.ArmatureReparenter.Runtime;
 using ChemicalCrux.ArmatureReparenter.Runtime.Freeze;
-using ChemicalCrux.ArmatureReparenter.Runtime.Model;
+using ChemicalCrux.ArmatureReparenter.Runtime.Core;
 using com.vrcfury.api;
 using UnityEditor.Animations;
 using UnityEngine;
@@ -28,11 +28,11 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
         void Process(ReparentArmature reparentArmature)
         {
             Dictionary<Transform, Transform> bonePairs = new();
-            Dictionary<Transform, ReparentArmatureModelV1.AttachSettings> overrideMap = new();
+            Dictionary<Transform, ReparentArmatureCoreV1.AttachSettings> overrideMap = new();
 
             List<VRCConstraintBase> constraints = new();
 
-            if (!reparentArmature.model.TryUpgradeTo(out ReparentArmatureModelV1 model))
+            if (!reparentArmature.core.TryUpgradeTo(out ReparentArmatureCoreV1 model))
             {
                 Debug.LogError("Failed to upgrade the model data.");
                 return;
@@ -44,24 +44,36 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
                 return;
             }
 
-            foreach (HumanBodyBones humanBodyBone in Enum.GetValues(typeof(HumanBodyBones)))
+            if (model.humanoid)
             {
-                if (humanBodyBone == HumanBodyBones.LastBone)
-                    break;
-                
-                var sourceTransform = model.source.GetBoneTransform(humanBodyBone);
-                var targetTransform = model.target.GetBoneTransform(humanBodyBone);
-
-                if (sourceTransform && targetTransform)
+                foreach (HumanBodyBones humanBodyBone in Enum.GetValues(typeof(HumanBodyBones)))
                 {
-                    bonePairs[sourceTransform] = targetTransform;
-                    overrideMap[sourceTransform] = model.defaultSettings;
+                    if (humanBodyBone == HumanBodyBones.LastBone)
+                        break;
+                
+                    var sourceTransform = model.sourceAnimator.GetBoneTransform(humanBodyBone);
+                    var targetTransform = model.targetAnimator.GetBoneTransform(humanBodyBone);
+
+                    if (sourceTransform && targetTransform)
+                    {
+                        bonePairs[sourceTransform] = targetTransform;
+                        overrideMap[sourceTransform] = model.humanoidSettings;
+                    }
+                }
+
+                foreach (var overrideData in model.humanoidOverrides)
+                {
+                    foreach (var (sourceBone, targetBone) in overrideData.GetAllTransforms(model.sourceAnimator, model.targetAnimator))
+                    {
+                        bonePairs[sourceBone] = targetBone;
+                        overrideMap[sourceBone] = overrideData.settings;
+                    }
                 }
             }
 
             foreach (var overrideData in model.overrides)
             {
-                foreach (var (sourceBone, targetBone) in overrideData.GetAllTransforms(model.source, model.target))
+                foreach (var (sourceBone, targetBone) in overrideData.GetAllTransforms())
                 {
                     bonePairs[sourceBone] = targetBone;
                     overrideMap[sourceBone] = overrideData.settings;
@@ -74,14 +86,14 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
 
                 Vector3 position = default;
 
-                if (settings.keepPositionOffset)
+                if (settings.keepPosition)
                 {
                     position = targetBone.InverseTransformDirection(sourceBone.position - targetBone.position);
                 }
 
                 Quaternion rotation = default;
 
-                if (settings.keepRotationOffset)
+                if (settings.keepRotation)
                 {
                     rotation = Quaternion.Inverse(targetBone.rotation) * sourceBone.rotation;
                 }
@@ -90,16 +102,16 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
 
                 switch (settings.constraintType)
                 {
-                    case ReparentArmatureModelV1.ConstraintType.Parent:
+                    case ReparentArmatureCoreV1.ConstraintType.Parent:
                         constraint = sourceBone.gameObject.AddComponent<VRCParentConstraint>();
                         break;
-                    case ReparentArmatureModelV1.ConstraintType.Position:
+                    case ReparentArmatureCoreV1.ConstraintType.Position:
                         constraint = sourceBone.gameObject.AddComponent<VRCPositionConstraint>();
                         break;
-                    case ReparentArmatureModelV1.ConstraintType.Rotation:
+                    case ReparentArmatureCoreV1.ConstraintType.Rotation:
                         constraint = sourceBone.gameObject.AddComponent<VRCRotationConstraint>();
                         break;
-                    case ReparentArmatureModelV1.ConstraintType.None:
+                    case ReparentArmatureCoreV1.ConstraintType.None:
                         constraint = null;
                         break;
                     default:
@@ -175,7 +187,7 @@ namespace ChemicalCrux.ArmatureReparenter.Editor
 
                 foreach (var constraint in constraints)
                 {
-                    string path = GetPath(model.source.transform, constraint.transform);
+                    string path = GetPath(model.sourceAnimator.transform, constraint.transform);
                     Type type = constraint.GetType();
                     string property = "FreezeToWorld";
                     var zeroCurve = AnimationCurve.Constant(0, 1, 0);

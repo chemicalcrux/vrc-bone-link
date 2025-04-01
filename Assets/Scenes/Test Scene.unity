@@ -183,39 +183,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 76dac1fcefbc744de86aa2ec2f84f76c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  model:
-    rid: 7569698405476204547
+  core:
+    rid: 7569698446724825105
   freeze:
-    rid: 7569698405476204548
+    rid: 7569698446724825106
   references:
     version: 2
     RefIds:
-    - rid: 7569698405476204547
-      type: {class: ReparentArmatureModelV1, ns: ChemicalCrux.ArmatureReparenter.Runtime.Model,
+    - rid: 7569698446724825105
+      type: {class: ReparentArmatureCoreV1, ns: ChemicalCrux.ArmatureReparenter.Runtime.Core,
         asm: ArmatureReparenterRuntime}
       data:
-        defaultSettings:
+        humanoid: 1
+        sourceAnimator: {fileID: 0}
+        targetAnimator: {fileID: 0}
+        humanoidSettings:
           constraintType: 0
-          keepPositionOffset: 0
-          keepRotationOffset: 0
-        source: {fileID: 643635459}
-        target: {fileID: 1158940308}
-        overrides: []
-    - rid: 7569698405476204548
+          keepPosition: 0
+          keepRotation: 0
+        humanoidOverrides: []
+        overrides:
+        - bonePairs:
+          - mode: 0
+            sourceBone: {fileID: 0}
+            targetBone: {fileID: 0}
+          settings:
+            constraintType: 0
+            keepPosition: 0
+            keepRotation: 0
+    - rid: 7569698446724825106
       type: {class: ReparentArmatureFreezeV1, ns: ChemicalCrux.ArmatureReparenter.Runtime.Freeze,
         asm: ArmatureReparenterRuntime}
       data:
         enabled: 1
         addGlobalParameter: 1
         globalParameterName: chemicalcrux/Armature Reparenter/Freeze
-        addControl: 0
+        addControl: 1
         controlPath: Freeze
---- !u!95 &643635459 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: f81e8172c337a714894d6fdbd0900d8d,
-    type: 3}
-  m_PrefabInstance: {fileID: 1926145689}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &688504709 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -3406746260267642629, guid: f81e8172c337a714894d6fdbd0900d8d,
@@ -607,12 +611,6 @@ MonoBehaviour:
     height: 0.061322134
     position: {x: 0, y: 0, z: 0}
     rotation: {x: 0, y: 0, z: 0, w: 1}
---- !u!95 &1158940308 stripped
-Animator:
-  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: f81e8172c337a714894d6fdbd0900d8d,
-    type: 3}
-  m_PrefabInstance: {fileID: 1081046407}
-  m_PrefabAsset: {fileID: 0}
 --- !u!4 &1158940309 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: f81e8172c337a714894d6fdbd0900d8d,
@@ -810,7 +808,7 @@ Transform:
   m_LocalRotation: {x: 0.40821788, y: -0.23456968, z: 0.10938163, w: 0.8754261}
   m_LocalPosition: {x: 0, y: 3, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
@@ -902,7 +900,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 1, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

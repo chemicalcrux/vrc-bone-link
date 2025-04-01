@@ -4,12 +4,13 @@ using System.Linq;
 using ChemicalCrux.CruxCore.Runtime.Upgrades;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.Serialization;
 
-namespace ChemicalCrux.ArmatureReparenter.Runtime.Model
+namespace ChemicalCrux.ArmatureReparenter.Runtime.Core
 {
     [Serializable]
     [UpgradableVersion(version: 1)]
-    public class ReparentArmatureModelV1 : ReparentArmatureModel
+    public class ReparentArmatureCoreV1 : ReparentArmatureCore
     {
         public enum BoneGroup
         {
@@ -29,8 +30,6 @@ namespace ChemicalCrux.ArmatureReparenter.Runtime.Model
             Rotation,
             None
         }
-
-        public AttachSettings defaultSettings;
 
         public enum BoneMatchMode
         {
@@ -112,11 +111,10 @@ namespace ChemicalCrux.ArmatureReparenter.Runtime.Model
         }
 
         [Serializable]
-        public struct OverrideGroup
+        public struct HumanoidOverrideGroup
         {
             public List<HumanBodyBones> humanBodyBones;
             public List<BoneGroup> boneGroups;
-            public List<BonePair> bonePairs;
 
             private static IEnumerable<HumanBodyBones> GetBonesInRange(HumanBodyBones start,
                 HumanBodyBones endExclusive)
@@ -187,15 +185,29 @@ namespace ChemicalCrux.ArmatureReparenter.Runtime.Model
             public IEnumerable<(Transform sourceBone, Transform targetBone)> GetAllTransforms(Animator source,
                 Animator target)
             {
-                foreach (var humanBodyBone in GetBones())
+                if (source && target)
                 {
-                    var sourceTransform = source.GetBoneTransform(humanBodyBone);
-                    var targetTransform = target.GetBoneTransform(humanBodyBone);
+                    foreach (var humanBodyBone in GetBones())
+                    {
+                        var sourceTransform = source.GetBoneTransform(humanBodyBone);
+                        var targetTransform = target.GetBoneTransform(humanBodyBone);
 
-                    if (sourceTransform && targetTransform)
-                        yield return (sourceTransform, targetTransform);
+                        if (sourceTransform && targetTransform)
+                            yield return (sourceTransform, targetTransform);
+                    }
                 }
+            }
 
+            public AttachSettings settings;
+        }
+
+        [Serializable]
+        public struct OverrideGroup
+        {
+            public List<BonePair> bonePairs;
+
+            public IEnumerable<(Transform sourceBone, Transform targetBone)> GetAllTransforms()
+            {
                 foreach (var bonePair in bonePairs)
                 {
                     foreach (var result in bonePair.Resolve())
@@ -212,16 +224,21 @@ namespace ChemicalCrux.ArmatureReparenter.Runtime.Model
         public struct AttachSettings
         {
             public ConstraintType constraintType;
-            public bool keepPositionOffset;
-            public bool keepRotationOffset;
+            public bool keepPosition;
+            public bool keepRotation;
         }
+        
+        public bool humanoid = true;
+        
+        public Animator sourceAnimator;
+        public Animator targetAnimator; 
+        public AttachSettings humanoidSettings;
 
-        public Animator source;
-        public Animator target;
-
+        public List<HumanoidOverrideGroup> humanoidOverrides;
+        
         public List<OverrideGroup> overrides;
 
-        public override ReparentArmatureModel Upgrade()
+        public override ReparentArmatureCore Upgrade()
         {
             return this;
         }
