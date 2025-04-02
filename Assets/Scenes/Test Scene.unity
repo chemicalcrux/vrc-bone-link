@@ -200,8 +200,14 @@ MonoBehaviour:
         humanoidSettings:
           constraintType: 0
           keepPosition: 0
-          keepRotation: 0
-        humanoidOverrides: []
+          keepRotation: 1
+        humanoidOverrides:
+        - humanBodyBones: 
+          boneGroups: 
+          settings:
+            constraintType: 0
+            keepPosition: 0
+            keepRotation: 0
         overrides:
         - bonePairs:
           - mode: 0

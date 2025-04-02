@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ChemicalCrux.CruxCore.Runtime;
 using ChemicalCrux.CruxCore.Runtime.Upgrades;
 using UnityEngine;
 using UnityEngine.Pool;
-using UnityEngine.Serialization;
 
 namespace ChemicalCrux.ArmatureReparenter.Runtime.Core
 {
@@ -223,15 +223,22 @@ namespace ChemicalCrux.ArmatureReparenter.Runtime.Core
         [Serializable]
         public struct AttachSettings
         {
+            [TooltipRef(assetRef: "ec807bd54b68c4de3a7501ecdfe7a260,9197481963319205126")]
             public ConstraintType constraintType;
+            [TooltipRef(assetRef: "c6dd706c60f8e4e4da97e68f6152a291,9197481963319205126")]
             public bool keepPosition;
+            [TooltipRef(assetRef: "00cece11ac38746fa92e1d1a6a6c1ab3,9197481963319205126")]
             public bool keepRotation;
         }
         
+        [TooltipRef(assetRef: "099ba10bbffa2432c9ae815417d2ec0a,9197481963319205126")]
         public bool humanoid = true;
         
+        [TooltipRef(assetRef: "c998a8524785d41b089046cc3440dfd7,9197481963319205126")]
         public Animator sourceAnimator;
+        [TooltipRef(assetRef: "532045a36877140e1a86dc44e9053a20,9197481963319205126")]
         public Animator targetAnimator; 
+        
         public AttachSettings humanoidSettings;
 
         public List<HumanoidOverrideGroup> humanoidOverrides;
