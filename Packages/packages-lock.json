@@ -1,13 +1,13 @@
 {
   "dependencies": {
-    "best.crux.core": {
-      "version": "file:best.crux.core",
+    "best.crux.bone-link": {
+      "version": "file:best.crux.bone-link",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
     },
-    "com.chemicalcrux.armature-reparenter": {
-      "version": "file:com.chemicalcrux.armature-reparenter",
+    "best.crux.core": {
+      "version": "file:best.crux.core",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}

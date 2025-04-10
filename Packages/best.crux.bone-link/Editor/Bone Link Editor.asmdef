@@ -1,0 +1,25 @@
+{
+    "name": "Crux.BoneLink.Editor",
+    "rootNamespace": "Crux.BoneLink.Editor",
+    "references": [
+        "GUID:5718fb738711cd34ea54e9553040911d",
+        "GUID:b906909fcc54f634db50f2cad0f988d9",
+        "GUID:3456780c4fb2d324ab9c633d6f1b0ddb",
+        "GUID:6e9c6119ac4eb334284fb7b4bc6d1f05",
+        "GUID:cd59bf9231294ffab8427690942c6a35",
+        "GUID:c041d10d9ddb24a768bf426e976be894",
+        "GUID:1cdc6dedefbda46a6b25f4afc8d269f1",
+        "GUID:ac31e14ae19024acb994cc8c2bbc3769"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

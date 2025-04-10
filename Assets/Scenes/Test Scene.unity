@@ -191,8 +191,7 @@ MonoBehaviour:
     version: 2
     RefIds:
     - rid: 7569698446724825105
-      type: {class: ReparentArmatureCoreV1, ns: ChemicalCrux.ArmatureReparenter.Runtime.Core,
-        asm: ArmatureReparenterRuntime}
+      type: {class: BoneLinkCoreV1, ns: Crux.BoneLink.Runtime.Core, asm: Crux.BoneLink.Runtime}
       data:
         humanoid: 1
         sourceAnimator: {fileID: 1926145690}
@@ -204,8 +203,7 @@ MonoBehaviour:
         humanoidOverrides: []
         overrides: []
     - rid: 7569698446724825106
-      type: {class: ReparentArmatureFreezeV1, ns: ChemicalCrux.ArmatureReparenter.Runtime.Freeze,
-        asm: ArmatureReparenterRuntime}
+      type: {class: BoneLinkFreezeV1, ns: Crux.BoneLink.Runtime.Freeze, asm: Crux.BoneLink.Runtime}
       data:
         enabled: 1
         addGlobalParameter: 1
@@ -629,7 +627,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   version: 3
   unityVersion: 2022.3.22f1
-  vrcfuryVersion: 1.1207.0
+  vrcfuryVersion: 1.1226.0
   somethingIsBroken: 0
   config:
     features: []
