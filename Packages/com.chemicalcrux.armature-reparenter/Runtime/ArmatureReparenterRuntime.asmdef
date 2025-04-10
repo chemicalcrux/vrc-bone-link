@@ -3,7 +3,7 @@
     "rootNamespace": "ChemicalCrux.ArmatureReparenter.Runtime",
     "references": [
         "com.vrcfury.api",
-        "CruxCoreRuntime"
+        "Crux.Core.Runtime"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

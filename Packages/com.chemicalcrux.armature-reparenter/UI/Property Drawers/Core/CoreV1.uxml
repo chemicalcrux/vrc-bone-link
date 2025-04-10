@@ -1,11 +1,11 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <uie:PropertyField binding-path="humanoid" />
-    <ChemicalCrux.CruxCore.Editor.Controls.RevealArea value="true" binding-path="inner" binding="humanoid">
+    <Crux.Core.Editor.Controls.RevealArea value="true" binding-path="inner" binding="humanoid">
         <uie:PropertyField binding-path="sourceAnimator" />
         <uie:PropertyField binding-path="targetAnimator" />
         <uie:PropertyField binding-path="humanoidSettings" />
         <uie:PropertyField binding-path="humanoidOverrides" />
-    </ChemicalCrux.CruxCore.Editor.Controls.RevealArea>
+    </Crux.Core.Editor.Controls.RevealArea>
     <ui:VisualElement style="flex-grow: 1; height: 16px;" />
-    <ChemicalCrux.CruxCore.Editor.Controls.AnnotatedPropertyField binding-path="overrides" tooltip-ref="71db809309e6e40cb8d50182e801e231,9197481963319205126" />
+    <Crux.Core.Editor.Controls.AnnotatedPropertyField binding-path="overrides" tooltip-ref="71db809309e6e40cb8d50182e801e231,9197481963319205126" />
 </ui:UXML>

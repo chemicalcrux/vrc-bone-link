@@ -1,13 +1,13 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
     <uie:PropertyField binding-path="enabled" />
-    <ChemicalCrux.CruxCore.Editor.Controls.RevealArea binding="enabled">
+    <Crux.Core.Editor.Controls.RevealArea binding="enabled">
         <uie:PropertyField binding-path="addGlobalParameter" />
-        <ChemicalCrux.CruxCore.Editor.Controls.RevealArea binding="addGlobalParameter">
+        <Crux.Core.Editor.Controls.RevealArea binding="addGlobalParameter">
             <uie:PropertyField binding-path="globalParameterName" />
-        </ChemicalCrux.CruxCore.Editor.Controls.RevealArea>
+        </Crux.Core.Editor.Controls.RevealArea>
         <uie:PropertyField binding-path="addControl" />
-        <ChemicalCrux.CruxCore.Editor.Controls.RevealArea binding="addControl">
+        <Crux.Core.Editor.Controls.RevealArea binding="addControl">
             <uie:PropertyField binding-path="controlPath" />
-        </ChemicalCrux.CruxCore.Editor.Controls.RevealArea>
-    </ChemicalCrux.CruxCore.Editor.Controls.RevealArea>
+        </Crux.Core.Editor.Controls.RevealArea>
+    </Crux.Core.Editor.Controls.RevealArea>
 </ui:UXML>

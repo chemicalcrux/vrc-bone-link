@@ -1,13 +1,13 @@
 {
   "dependencies": {
-    "com.chemicalcrux.armature-reparenter": {
-      "version": "file:com.chemicalcrux.armature-reparenter",
+    "best.crux.core": {
+      "version": "file:best.crux.core",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}
     },
-    "com.chemicalcrux.crux-core": {
-      "version": "file:com.chemicalcrux.crux-core",
+    "com.chemicalcrux.armature-reparenter": {
+      "version": "file:com.chemicalcrux.armature-reparenter",
       "depth": 0,
       "source": "embedded",
       "dependencies": {}

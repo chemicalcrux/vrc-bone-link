@@ -1,6 +1,6 @@
 using System;
-using ChemicalCrux.CruxCore.Runtime;
-using ChemicalCrux.CruxCore.Runtime.Upgrades;
+using Crux.Core.Runtime.Attributes;
+using Crux.Core.Runtime.Upgrades;
 
 namespace ChemicalCrux.ArmatureReparenter.Runtime.Core
 {

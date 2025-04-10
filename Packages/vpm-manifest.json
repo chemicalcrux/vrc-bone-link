@@ -6,11 +6,11 @@
     "vrchat.blackstartx.gesture-manager": {
       "version": "3.9.3"
     },
-    "com.vrcfury.vrcfury": {
-      "version": "1.1207.0"
+    "best.crux.core": {
+      "version": "0.6.3"
     },
-    "com.chemicalcrux.crux-core": {
-      "version": "0.4.3"
+    "com.vrcfury.vrcfury": {
+      "version": "1.1226.0"
     }
   },
   "locked": {
@@ -30,12 +30,12 @@
         "com.vrchat.avatars": ">=3.5.2 < 3.8.X"
       }
     },
-    "com.vrcfury.vrcfury": {
-      "version": "1.1207.0",
+    "best.crux.core": {
+      "version": "0.6.3",
       "dependencies": {}
     },
-    "com.chemicalcrux.crux-core": {
-      "version": "0.4.3",
+    "com.vrcfury.vrcfury": {
+      "version": "1.1226.0",
       "dependencies": {}
     }
   }
