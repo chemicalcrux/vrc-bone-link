@@ -15,6 +15,32 @@ namespace Crux.BoneLink.Editor.Editor
 {
     public class BoneLinkProcessor : IVRCSDKPreprocessAvatarCallback
     {
+        private struct SmoothingKey : IEquatable<SmoothingKey>
+        {
+            public float basePower;
+
+            public bool Equals(SmoothingKey other)
+            {
+                return basePower.Equals(other.basePower);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is SmoothingKey other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return basePower.GetHashCode();
+            }
+        }
+        
+        private class SmoothingGroup
+        {
+            public List<VRCConstraintBase> constraints = new();
+            public float basePower;
+        }
+        
         public int callbackOrder => -10001;
 
         public bool OnPreprocessAvatar(GameObject avatarGameObject)
@@ -27,6 +53,7 @@ namespace Crux.BoneLink.Editor.Editor
 
         void Process(BoneLinkBuilder boneLinkBuilder)
         {
+            Dictionary<SmoothingKey, SmoothingGroup> smoothingGroups = new();
             Dictionary<Transform, Transform> bonePairs = new();
             Dictionary<Transform, BoneLinkCoreV1.AttachSettings> overrideMap = new();
 
@@ -131,6 +158,31 @@ namespace Crux.BoneLink.Editor.Editor
                     ParentRotationOffset = rotation.eulerAngles
                 });
 
+                if (settings.smoothingType != BoneLinkCoreV1.SmoothingType.None)
+                {
+                    SmoothingKey key = new SmoothingKey
+                    {
+                        basePower = settings.smoothingFixedPower
+                    };
+
+                    if (!smoothingGroups.TryGetValue(key, out var group))
+                    {
+                        group = new SmoothingGroup();
+                        group.basePower = settings.smoothingFixedPower;
+                        smoothingGroups[key] = group;
+                    }
+
+                    group.constraints.Add(constraint);
+                    
+                    constraint.Sources.Add(new VRCConstraintSource
+                    {
+                        Weight = 0f,
+                        SourceTransform = sourceBone,
+                        ParentPositionOffset = Vector3.zero,
+                        ParentRotationOffset = Vector3.zero
+                    });
+                }
+                
                 constraint.SolveInLocalSpace = true;
                 constraint.Locked = true;
                 constraint.IsActive = true;
@@ -236,6 +288,70 @@ namespace Crux.BoneLink.Editor.Editor
                     fc.AddMenu(menu, freeze.controlPath);
                     fc.AddParams(parameters);
                 }
+            }
+
+            AnimatorController smoothingController = new AnimatorController();
+
+            smoothingController.AddParameter("Shared/Time/Delta", AnimatorControllerParameterType.Float);
+            
+            fc.AddController(smoothingController);
+            fc.AddGlobalParam("Shared/Time/Delta");
+
+            int smoothingCount = 1;
+            
+            foreach (var group in smoothingGroups.Values)
+            {
+                var smoothingMachine = new AnimatorStateMachine
+                {
+                    name = $"Smoothing Machine {smoothingCount}"
+                };
+
+                var smoothingLayer = new AnimatorControllerLayer
+                {
+                    name = $"Smoothing Layer {smoothingCount}",
+                    defaultWeight = 1f,
+                    stateMachine = smoothingMachine
+                };
+
+                smoothingController.AddLayer(smoothingLayer);
+
+                var smoothingState = smoothingMachine.AddState("Smooth");
+                smoothingState.timeParameterActive = true;
+                smoothingState.timeParameter = "Shared/Time/Delta";
+                
+                var smoothingClip = new AnimationClip
+                {
+                    name = $"Smoothing Clip {smoothingCount}"
+                };
+
+                var smoothingTargetCurve = new AnimationCurve();
+                var smoothingSelfCurve = new AnimationCurve();
+                
+                // TODO denser near zero?
+
+                for (int i = 0; i < 50; ++i)
+                {
+                    // assume a worst-case framerate of 10
+                    float t = Mathf.InverseLerp(0, 49, i);
+                    float result = 1 - Mathf.Exp(-t * group.basePower);
+                    smoothingSelfCurve.AddKey(t, 1 - result);
+                    smoothingTargetCurve.AddKey(t, result);
+                }
+
+                foreach (var constraint in group.constraints)
+                {
+                    String path = GetPath(model.sourceAnimator.transform, constraint.transform);
+                    Type type = constraint.GetType();
+                    String targetProperty = "Sources.source0.Weight";
+                    String selfProperty = "Sources.source1.Weight";
+
+                    smoothingClip.SetCurve(path, type, targetProperty, smoothingTargetCurve);
+                    smoothingClip.SetCurve(path, type, selfProperty, smoothingSelfCurve);
+                }
+
+                smoothingState.motion = smoothingClip;
+
+                ++smoothingCount;
             }
         }
 

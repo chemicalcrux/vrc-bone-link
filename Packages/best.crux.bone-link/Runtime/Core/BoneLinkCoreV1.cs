@@ -30,6 +30,12 @@ namespace Crux.BoneLink.Runtime.Core
             Rotation,
             None
         }
+
+        public enum SmoothingType
+        {
+            None,
+            Constant
+        }
         
         public enum BoneMatchMode
         {
@@ -229,6 +235,11 @@ namespace Crux.BoneLink.Runtime.Core
             public bool keepPosition;
             [TooltipRef(assetRef: "00cece11ac38746fa92e1d1a6a6c1ab3,9197481963319205126")]
             public bool keepRotation;
+
+            public SmoothingType smoothingType;
+            public float smoothingFixedPower;
+            public string smoothingToggleParameter;
+            public string smoothingVariableParameter;
         }
         
         [TooltipRef(assetRef: "099ba10bbffa2432c9ae815417d2ec0a,9197481963319205126")]
