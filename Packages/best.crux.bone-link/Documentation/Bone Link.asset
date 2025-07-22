@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 288f4a43a3569418b9de2fcb41f2e047, type: 3}
   m_Name: Bone Link
   m_EditorClassIdentifier: 
-  title: Armature Reparenter
+  title: Bone Link
   description: A tool for gluing armatures together
   icon: {fileID: 0}
   categories:
