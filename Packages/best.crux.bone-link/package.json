@@ -1,7 +1,7 @@
 {
   "name": "best.crux.bone-link",
   "displayName": "Bone Link",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "unity": "2022.3",
   "description": "Staples one armature onto another",
   "vrchatVersion": "2025.1.2",
@@ -13,6 +13,6 @@
   "vpmDependencies" : {
     "com.vrchat.avatars" : ">=3.7.6 < 3.8.X",
     "com.vrcfury.vrcfury" : ">=1.1206.0",
-    "com.chemicalcrux.crux-core" : ">=0.6.4"
+    "best.crux.crux-core" : ">=0.6.4"
   }
 }
