@@ -1,0 +1,26 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <ui:Foldout text="Foldout">
+        <uie:PropertyField binding-path="constraintType" />
+        <Crux.Core.Editor.Controls.EnumRevealArea enum-type="Crux.BoneLink.Runtime.Core.BoneLinkCoreV1+ConstraintType, Crux.BoneLink.Runtime" enum-names="Position" binding="constraintType">
+            <uie:PropertyField binding-path="keepPosition" />
+        </Crux.Core.Editor.Controls.EnumRevealArea>
+        <Crux.Core.Editor.Controls.EnumRevealArea enum-type="Crux.BoneLink.Runtime.Core.BoneLinkCoreV1+ConstraintType, Crux.BoneLink.Runtime" enum-names="Rotation" binding="constraintType">
+            <uie:PropertyField binding-path="keepRotation" />
+        </Crux.Core.Editor.Controls.EnumRevealArea>
+        <Crux.Core.Editor.Controls.EnumRevealArea enum-type="Crux.BoneLink.Runtime.Core.BoneLinkCoreV1+ConstraintType, Crux.BoneLink.Runtime" enum-names="Parent" binding="constraintType">
+            <uie:PropertyField binding-path="keepPosition" />
+            <uie:PropertyField binding-path="keepRotation" />
+        </Crux.Core.Editor.Controls.EnumRevealArea>
+        <uie:PropertyField binding-path="smoothingType" />
+        <Crux.Core.Editor.Controls.EnumRevealArea binding="smoothingType" enum-type="Crux.BoneLink.Runtime.Core.BoneLinkCoreV1+SmoothingType, Crux.BoneLink.Runtime" enum-names="Constant,Toggled">
+            <uie:PropertyField binding-path="smoothingFixedPower" />
+        </Crux.Core.Editor.Controls.EnumRevealArea>
+        <Crux.Core.Editor.Controls.EnumRevealArea binding="smoothingType" enum-type="Crux.BoneLink.Runtime.Core.BoneLinkCoreV1+SmoothingType, Crux.BoneLink.Runtime" enum-names="Toggled">
+            <uie:PropertyField binding-path="smoothingToggleParameter" />
+            <uie:PropertyField binding-path="smoothingToggleControl" />
+            <Crux.Core.Editor.Controls.RevealArea name="RevealArea" binding="smoothingToggleControl">
+                <uie:PropertyField binding-path="smoothingToggleControlPath" />
+            </Crux.Core.Editor.Controls.RevealArea>
+        </Crux.Core.Editor.Controls.EnumRevealArea>
+    </ui:Foldout>
+</ui:UXML>

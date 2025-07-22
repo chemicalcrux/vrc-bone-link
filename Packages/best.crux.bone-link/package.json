@@ -13,6 +13,6 @@
   "vpmDependencies" : {
     "com.vrchat.avatars" : ">=3.7.6 < 3.8.X",
     "com.vrcfury.vrcfury" : ">=1.1206.0",
-    "com.chemicalcrux.crux-core" : ">=0.6.3"
+    "com.chemicalcrux.crux-core" : ">=0.6.4"
   }
 }

@@ -10,6 +10,7 @@ namespace Crux.BoneLink.Runtime.Core
 {
     [Serializable]
     [UpgradableVersion(version: 1)]
+    [UpgradablePropertyDrawer("Packages/best.crux.bone-link/UI/Property Drawers/Core/CoreV1.uxml")]
     public class BoneLinkCoreV1 : BoneLinkCore
     {
         public enum BoneGroup
@@ -34,7 +35,8 @@ namespace Crux.BoneLink.Runtime.Core
         public enum SmoothingType
         {
             None,
-            Constant
+            Constant,
+            Toggled
         }
         
         public enum BoneMatchMode
@@ -239,7 +241,8 @@ namespace Crux.BoneLink.Runtime.Core
             public SmoothingType smoothingType;
             public float smoothingFixedPower;
             public string smoothingToggleParameter;
-            public string smoothingVariableParameter;
+            public bool smoothingToggleControl;
+            public string smoothingToggleControlPath;
         }
         
         [TooltipRef(assetRef: "099ba10bbffa2432c9ae815417d2ec0a,9197481963319205126")]

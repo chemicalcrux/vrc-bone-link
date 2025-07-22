@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using com.vrcfury.api;
 using Crux.BoneLink.Runtime;
 using Crux.BoneLink.Runtime.Core;
 using Crux.BoneLink.Runtime.Freeze;
+using HarmonyLib;
+using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
 using VRC.Dynamics;
@@ -18,10 +21,12 @@ namespace Crux.BoneLink.Editor.Editor
         private struct SmoothingKey : IEquatable<SmoothingKey>
         {
             public float basePower;
+            public BoneLinkCoreV1.SmoothingType type;
+            public String toggleParameter;
 
             public bool Equals(SmoothingKey other)
             {
-                return basePower.Equals(other.basePower);
+                return basePower.Equals(other.basePower) && type == other.type && toggleParameter == other.toggleParameter;
             }
 
             public override bool Equals(object obj)
@@ -31,7 +36,7 @@ namespace Crux.BoneLink.Editor.Editor
 
             public override int GetHashCode()
             {
-                return basePower.GetHashCode();
+                return HashCode.Combine(basePower, (int)type, toggleParameter);
             }
         }
         
@@ -39,6 +44,29 @@ namespace Crux.BoneLink.Editor.Editor
         {
             public List<VRCConstraintBase> constraints = new();
             public float basePower;
+            public String toggleParameter;
+            public BoneLinkCoreV1.SmoothingType type;
+        }
+
+        private struct SmoothMenuItems : IEquatable<SmoothMenuItems>
+        {
+            public string controlPath;
+            public string parameter;
+
+            public bool Equals(SmoothMenuItems other)
+            {
+                return controlPath == other.controlPath && parameter == other.parameter;
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is SmoothMenuItems other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(controlPath, parameter);
+            }
         }
         
         public int callbackOrder => -10001;
@@ -56,6 +84,10 @@ namespace Crux.BoneLink.Editor.Editor
             Dictionary<SmoothingKey, SmoothingGroup> smoothingGroups = new();
             Dictionary<Transform, Transform> bonePairs = new();
             Dictionary<Transform, BoneLinkCoreV1.AttachSettings> overrideMap = new();
+
+            HashSet<string> smoothParameters = new();
+            HashSet<SmoothMenuItems> smoothMenuItems = new();
+            
 
             List<VRCConstraintBase> constraints = new();
 
@@ -162,13 +194,20 @@ namespace Crux.BoneLink.Editor.Editor
                 {
                     SmoothingKey key = new SmoothingKey
                     {
-                        basePower = settings.smoothingFixedPower
+                        basePower = settings.smoothingFixedPower,
+                        type = settings.smoothingType,
+                        toggleParameter = settings.smoothingToggleParameter
                     };
 
                     if (!smoothingGroups.TryGetValue(key, out var group))
                     {
-                        group = new SmoothingGroup();
-                        group.basePower = settings.smoothingFixedPower;
+                        group = new SmoothingGroup
+                        {
+                            basePower = settings.smoothingFixedPower,
+                            type = settings.smoothingType,
+                            toggleParameter = settings.smoothingToggleParameter
+                        };
+                        
                         smoothingGroups[key] = group;
                     }
 
@@ -181,6 +220,20 @@ namespace Crux.BoneLink.Editor.Editor
                         ParentPositionOffset = Vector3.zero,
                         ParentRotationOffset = Vector3.zero
                     });
+
+                    if (settings.smoothingType == BoneLinkCoreV1.SmoothingType.Toggled)
+                    {
+                        smoothParameters.Add(settings.smoothingToggleParameter);
+
+                        if (settings.smoothingToggleControl)
+                        {
+                            smoothMenuItems.Add(new()
+                            {
+                                controlPath = settings.smoothingToggleControlPath,
+                                parameter = settings.smoothingToggleParameter
+                            });
+                        }
+                    }
                 }
                 
                 constraint.SolveInLocalSpace = true;
@@ -290,6 +343,40 @@ namespace Crux.BoneLink.Editor.Editor
                 }
             }
 
+            var smoothingParameters = ScriptableObject.CreateInstance<VRCExpressionParameters>();
+            smoothingParameters.parameters = smoothParameters.Select(param => new VRCExpressionParameters.Parameter
+            {
+                name = param,
+                defaultValue = 1f,
+                networkSynced = true,
+                saved = false,
+                valueType = VRCExpressionParameters.ValueType.Bool
+            }).ToArray();
+
+            fc.AddParams(smoothingParameters);
+
+            foreach (var param in smoothParameters)
+            {
+                fc.AddGlobalParam(param);
+            }
+
+            foreach (var item in smoothMenuItems)
+            {
+                var result = ScriptableObject.CreateInstance<VRCExpressionsMenu>();
+
+                result.controls.Add(new VRCExpressionsMenu.Control
+                {
+                    type = VRCExpressionsMenu.Control.ControlType.Toggle,
+                    name = "Smoothing Toggle",
+                    parameter = new VRCExpressionsMenu.Control.Parameter
+                    {
+                        name = item.parameter
+                    }
+                });
+
+                fc.AddMenu(result, item.controlPath);
+            }
+
             AnimatorController smoothingController = new AnimatorController();
 
             smoothingController.AddParameter("Shared/Time/Delta", AnimatorControllerParameterType.Float);
@@ -350,6 +437,44 @@ namespace Crux.BoneLink.Editor.Editor
                 }
 
                 smoothingState.motion = smoothingClip;
+                
+                if (group.type == BoneLinkCoreV1.SmoothingType.Toggled)
+                {
+                    if (smoothingController.MakeUniqueParameterName(group.toggleParameter) == group.toggleParameter)
+                    {
+                        smoothingController.AddParameter(group.toggleParameter, AnimatorControllerParameterType.Bool);
+                    }
+                    
+                    var noSmoothingState = smoothingMachine.AddState($"No Smoothing {smoothingCount}");
+                    
+                    var noSmoothingClip = new AnimationClip
+                    {
+                        name = $"No Smoothing Clip {smoothingCount}"
+                    };
+
+                    foreach (var constraint in group.constraints)
+                    {
+                        String path = GetPath(model.sourceAnimator.transform, constraint.transform);
+                        Type type = constraint.GetType();
+                        String targetProperty = "Sources.source0.Weight";
+                        String selfProperty = "Sources.source1.Weight";
+
+                        noSmoothingClip.SetCurve(path, type, targetProperty, AnimationCurve.Constant(0, 1, 1));
+                        noSmoothingClip.SetCurve(path, type, selfProperty, AnimationCurve.Constant(0, 1, 0));
+                    }
+
+                    noSmoothingState.motion = noSmoothingClip;
+
+                    var stopSmoothingTransition = smoothingState.AddTransition(noSmoothingState);
+                    stopSmoothingTransition.hasExitTime = false;
+                    stopSmoothingTransition.AddCondition(AnimatorConditionMode.IfNot, 0f, group.toggleParameter);
+                    stopSmoothingTransition.duration = 0.5f;
+
+                    var startSmoothingTransition = noSmoothingState.AddTransition(smoothingState);
+                    startSmoothingTransition.hasExitTime = false;
+                    startSmoothingTransition.AddCondition(AnimatorConditionMode.If, 0f, group.toggleParameter);
+                    stopSmoothingTransition.duration = 0.5f;
+                }
 
                 ++smoothingCount;
             }
