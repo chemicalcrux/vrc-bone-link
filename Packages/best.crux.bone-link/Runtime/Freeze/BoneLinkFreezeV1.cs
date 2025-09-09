@@ -6,6 +6,7 @@ namespace Crux.BoneLink.Runtime.Freeze
 {
     [Serializable]
     [UpgradableVersion(version: 1)]
+    [UpgradablePropertyDrawer("ad2ec9d0528a641f3a2fa03af1d31e9a,9197481963319205126")]
     public class BoneLinkFreezeV1 : BoneLinkFreeze
     {
         [TooltipRef(assetRef: "d23f70b6969084f41bf1b3e2ec2d5b66,9197481963319205126")]

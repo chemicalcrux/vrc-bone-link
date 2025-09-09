@@ -10,7 +10,7 @@ namespace Crux.BoneLink.Runtime.Core
 {
     [Serializable]
     [UpgradableVersion(version: 1)]
-    [UpgradablePropertyDrawer("Packages/best.crux.bone-link/UI/Property Drawers/Core/CoreV1.uxml")]
+    [UpgradablePropertyDrawer("ab666225cf34d431e9b41800697d764b,9197481963319205126")]
     public class BoneLinkCoreV1 : BoneLinkCore
     {
         public enum BoneGroup
